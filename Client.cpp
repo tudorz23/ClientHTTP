@@ -33,13 +33,13 @@ void Client::run() {
         } else if (stdin_data == "get_book") {
             cout << "get book input" << "\n";
         } else if (stdin_data == "add_book") {
-            cout << "add book input" << "\n";
+            manage_add_book();
         } else if (stdin_data == "delete_book") {
             cout << "delete book input" << "\n";
         } else if (stdin_data == "logout") {
             manage_logout();
         } else if (stdin_data == "exit") {
-            cout << "exit input" << "\n";
+            close_connection(sockfd);
             break;
         } else {
             cout << "Invalid input. Please try again.\n";
@@ -72,7 +72,7 @@ void Client::manage_register() {
 
     string credentials_string = credentials.dump();
     string req = compute_post_request(SERVER_IP, REGISTER_PATH, JSON_TYPE,
-                                      credentials_string, empty_string);
+                                      credentials_string, empty_string, empty_string);
     send_to_server(sockfd, req);
 
     string response = receive_from_server(sockfd);
@@ -114,12 +114,12 @@ void Client::manage_login() {
     // Create JSON object and send the POST request.
     json credentials = {
             {"password", password},
-            {"username", username},
+            {"username", username}
     };
 
     string credentials_string = credentials.dump();
     string req = compute_post_request(SERVER_IP, LOGIN_PATH, JSON_TYPE,
-                                      credentials_string, empty_string);
+                                      credentials_string, empty_string, empty_string);
     send_to_server(sockfd, req);
 
     string response = receive_from_server(sockfd);
@@ -147,7 +147,7 @@ void Client::manage_login() {
 
 void Client::manage_logout() {
     string request = compute_get_request(SERVER_IP, LOGOUT_PATH,
-                                         empty_string, cookies);
+                                         empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
@@ -177,7 +177,7 @@ void Client::manage_enter_library() {
     }
 
     string request = compute_get_request(SERVER_IP, ACCESS_PATH,
-                                         empty_string, cookies);
+                                         empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
@@ -205,4 +205,79 @@ void Client::manage_enter_library() {
 
     jwt = obj_json.at("token");
     cout << "SUCCESS: User has access to the library.\n";
+}
+
+
+void Client::manage_add_book() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
+    if (jwt.empty()) {
+        cout << "ERROR: User does not have access to the library.\n";
+        return;
+    }
+
+    string title, author, genre, publisher, page_count;
+
+    cout << "title=";
+    getline(cin, title, '\n');
+    if (title.empty()) {
+        cout << "ERROR: title cannot be empty.\n";
+        return;
+    }
+
+    cout << "author=";
+    getline(cin, author, '\n');
+
+    cout << "genre=";
+    getline(cin, genre, '\n');
+
+    cout << "publisher=";
+    getline(cin, publisher, '\n');
+
+    cout << "page_count=";
+    getline(cin, page_count, '\n');
+
+    if (title.empty() || author.empty() || genre.empty() || publisher.empty()
+        || page_count.empty()) {
+        cout << "ERROR: Book details cannot be empty.\n";
+        return;
+    }
+
+    if (!is_number(page_count)) {
+        cout << "ERROR: page count must be a positive integer.\n";
+        return;
+    }
+
+    // Create JSON object and send the POST request.
+    json book = {
+            {"title", title},
+            {"author", author},
+            {"genre", genre},
+            {"publisher", publisher},
+            {"page_count", page_count}
+    };
+
+    string book_string = book.dump();
+    string request = compute_post_request(SERVER_IP, BOOKS_PATH, JSON_TYPE,
+                                          book_string, cookies, jwt);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+
+    // Check if there is an error.
+    size_t json_start_pos = response.find('{');
+    if (json_start_pos != string::npos) {
+        string json_response = response.substr(json_start_pos);
+        json error_mapping = json::parse(json_response);
+        string error_msg = error_mapping.at("error");
+
+        cout << "ERROR: " << error_msg << "\n";
+        return;
+    }
+
+    // No error, print suggestive message.
+    cout << "SUCCESS: Book <" << title << "> successfully added to the library.\n";
 }

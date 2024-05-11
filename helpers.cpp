@@ -22,12 +22,6 @@ void error(const char *msg) {
 }
 
 
-void compute_message(char *message, const char *line) {
-    strcat(message, line);
-    strcat(message, "\r\n");
-}
-
-
 void compute_string_message(string &message, const string &line) {
     message.append(line);
     message.append("\r\n");
@@ -155,4 +149,23 @@ bool contains_space(string &buff) {
     }
 
     return false;
+}
+
+
+bool is_number(std::string &buff) {
+    if (buff.empty()) {
+        return false;
+    }
+
+    if (buff[0] == '0') {
+        return false;
+    }
+
+    for (auto &ch : buff) {
+        if (!isdigit(ch)) {
+            return false;
+        }
+    }
+
+    return true;
 }

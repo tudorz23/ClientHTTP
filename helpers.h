@@ -43,4 +43,7 @@ std::string receive_from_server(int sockfd);
 bool contains_space(std::string &buff);
 
 
+bool is_number(std::string &buff);
+
+
 #endif /* HELPERS_H */

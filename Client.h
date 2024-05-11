@@ -30,6 +30,12 @@ class Client {
 
 
     void manage_enter_library();
+
+
+    void manage_add_book();
+
+
+    void manage_get_books();
 };
 
 
