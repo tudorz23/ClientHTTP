@@ -6,28 +6,35 @@
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
 #include <netdb.h>      /* struct hostent, gethostbyname */
 #include <arpa/inet.h>
+
+
 #include "helpers.h"
 #include "buffer.h"
+#include "utils.h"
 
-#define HEADER_TERMINATOR "\r\n\r\n"
-#define HEADER_TERMINATOR_SIZE (sizeof(HEADER_TERMINATOR) - 1)
-#define CONTENT_LENGTH "Content-Length: "
-#define CONTENT_LENGTH_SIZE (sizeof(CONTENT_LENGTH) - 1)
 
-void error(const char *msg)
-{
+using namespace std;
+
+
+void error(const char *msg) {
     perror(msg);
     exit(0);
 }
 
-void compute_message(char *message, const char *line)
-{
+
+void compute_message(char *message, const char *line) {
     strcat(message, line);
     strcat(message, "\r\n");
 }
 
-int open_connection(char *host_ip, int portno, int ip_type, int socket_type, int flag)
-{
+
+void compute_string_message(string &message, const string &line) {
+    message.append(line);
+    message.append("\r\n");
+}
+
+
+int open_connection(std::string &host_ip, int portno, int ip_type, int socket_type, int flag) {
     struct sockaddr_in serv_addr;
     int sockfd = socket(ip_type, socket_type, flag);
     if (sockfd < 0)
@@ -36,22 +43,26 @@ int open_connection(char *host_ip, int portno, int ip_type, int socket_type, int
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = ip_type;
     serv_addr.sin_port = htons(portno);
-    inet_aton(host_ip, &serv_addr.sin_addr);
+    inet_aton(host_ip.c_str(), &serv_addr.sin_addr);
 
-    /* connect the socket */
+    /* Connect the socket */
     if (connect(sockfd, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0)
         error("ERROR connecting");
 
     return sockfd;
 }
 
-void close_connection(int sockfd)
-{
+
+void close_connection(int sockfd) {
     close(sockfd);
 }
 
-void send_to_server(int sockfd, char *message)
-{
+
+void send_to_server(int sockfd, string &msg) {
+
+    char *message = strdup(msg.c_str());
+    DIE(!message, "strdup failed\n");
+
     int bytes, sent = 0;
     int total = strlen(message);
 
@@ -68,10 +79,12 @@ void send_to_server(int sockfd, char *message)
 
         sent += bytes;
     } while (sent < total);
+
+    free(message);
 }
 
-char *receive_from_server(int sockfd)
-{
+
+string receive_from_server(int sockfd) {
     char response[BUFLEN];
     buffer buffer = buffer_init();
     int header_end = 0;
@@ -105,7 +118,7 @@ char *receive_from_server(int sockfd)
             content_length = strtol(buffer.data + content_length_start, NULL, 10);
             break;
         }
-    } while (1);
+    } while (true);
     size_t total = content_length + (size_t) header_end;
     
     while (buffer.size < total) {
@@ -122,10 +135,26 @@ char *receive_from_server(int sockfd)
         buffer_add(&buffer, response, (size_t) bytes);
     }
     buffer_add(&buffer, "", 1);
-    return buffer.data;
+
+    string final_response(buffer.data);
+
+    free(buffer.data);
+    return final_response;
 }
 
-char *basic_extract_json_response(char *str)
-{
+
+char *basic_extract_json_response(char *str) {
     return strstr(str, "{\"");
+}
+
+
+
+bool contains_space(string &buff) {
+    for (auto &ch : buff) {
+        if (isspace(ch)) {
+            return true;
+        }
+    }
+
+    return false;
 }

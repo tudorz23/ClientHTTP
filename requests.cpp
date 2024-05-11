@@ -11,9 +11,10 @@
 #include "requests.h"
 #include "utils.h"
 
+using namespace std;
+
 char *compute_get_request(char *host, char *url, char *query_params,
-                            char **cookies, int cookies_count)
-{
+                            char **cookies, int cookies_count) {
     char *message = (char*) calloc(BUFLEN, sizeof(char));
     char *line = (char*) calloc(LINELEN, sizeof(char));
 
@@ -52,9 +53,9 @@ char *compute_get_request(char *host, char *url, char *query_params,
     return message;
 }
 
-char *compute_post_request(char *host, char *url, char* content_type, char **body_data,
-                            int body_data_fields_count, char **cookies, int cookies_count)
-{
+
+char *old_compute_post_request(char *host, char *url, char* content_type, char **body_data,
+                            int body_data_fields_count, char **cookies, int cookies_count) {
     char *message = (char*) calloc(BUFLEN, sizeof(char));
     char *line = (char*) calloc(LINELEN, sizeof(char));
     char *body_data_buffer = (char *) calloc(LINELEN, sizeof(char));
@@ -114,5 +115,35 @@ char *compute_post_request(char *host, char *url, char* content_type, char **bod
 
     free(line);
     free(body_data_buffer);
+    return message;
+}
+
+
+string compute_post_request(const string &host, const string &url,
+                            const string &content_type, string &body_data,
+                            vector<string> &cookies) {
+    string message;
+    string line;
+
+    line.append("POST " + url + " HTTP/1.1");
+    compute_string_message(message, line);
+    line.clear();
+
+    line.append("Host: " + host);
+    compute_string_message(message, line);
+    line.clear();
+
+    line.append("Content-Length: " + to_string(body_data.length()));
+    compute_string_message(message, line);
+    line.clear();
+
+    line.append("Content-Type: " + content_type);
+    compute_string_message(message, line);
+    line.clear();
+
+    compute_string_message(message, "");
+
+    compute_string_message(message, body_data);
+
     return message;
 }

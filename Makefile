@@ -14,16 +14,19 @@ helpers.o: helpers.cpp
 requests.o: requests.cpp
 	$(CC) -c $(CFLAGS) requests.cpp -o requests.o
 
-client.o: client.cpp
-	$(CC) -c $(CFLAGS) client.cpp -o client.o
+client.o: Client.cpp
+	$(CC) -c $(CFLAGS) Client.cpp -o client.o
 
-client: client.o buffer.o helpers.o requests.o
-	$(CC) $(CFLAGS) client.o buffer.o helpers.o requests.o -o client
+client_main.o: client_main.cpp
+	$(CC) -c $(CFLAGS) client_main.cpp -o client_main.o
+
+client: client_main.o client.o buffer.o helpers.o requests.o
+	$(CC) $(CFLAGS) client_main.o client.o buffer.o helpers.o requests.o -o client
 
 clean:
 	rm -rf *.o $(TARGETS)
 
 pack:
-	zip -FSr Zaharia_Marius-Tudor_323CA_Tema3PC Makefile *.cpp *.h README.md
+	zip -FSr Zaharia_MariusTudor_323CA_Tema4PC Makefile *.cpp *.h README.md
 
-.PHONY: all clan pack
+.PHONY: all clean pack
