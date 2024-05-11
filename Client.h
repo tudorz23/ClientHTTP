@@ -26,6 +26,9 @@ class Client {
 
 
     void manage_login();
+
+
+    void manage_logout();
 };
 
 

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-char *compute_get_request(char *host, char *url, char *query_params,
+char *old_compute_get_request(char *host, char *url, char *query_params,
                             char **cookies, int cookies_count) {
     char *message = (char*) calloc(BUFLEN, sizeof(char));
     char *line = (char*) calloc(LINELEN, sizeof(char));
@@ -122,14 +122,20 @@ char *old_compute_post_request(char *host, char *url, char* content_type, char *
 string compute_post_request(const string &host, const string &url,
                             const string &content_type, string &body_data,
                             string &cookies) {
-    string message;
-    string line;
+    string message, line;
 
+    // Add method name, URL and protocol type.
     line.append("POST " + url + " HTTP/1.1");
     compute_string_message(message, line);
     line.clear();
 
+    // Add host.
     line.append("Host: " + host);
+    compute_string_message(message, line);
+    line.clear();
+
+    // Add Content-Type and Content-Length.
+    line.append("Content-Type: " + content_type);
     compute_string_message(message, line);
     line.clear();
 
@@ -137,13 +143,49 @@ string compute_post_request(const string &host, const string &url,
     compute_string_message(message, line);
     line.clear();
 
-    line.append("Content-Type: " + content_type);
+    // Add cookies (if any).
+    if (!cookies.empty()) {
+        line.append("Cookie: " + cookies);
+        compute_string_message(message, line);
+        line.clear();
+    }
+
+    // Add new line at the end of the headers.
+    compute_string_message(message, "");
+
+    // Add the actual data.
+    compute_string_message(message, body_data);
+
+    return message;
+}
+
+
+string compute_get_request(const string &host, const string &url,
+                           string &query_params, string &cookies) {
+    string message, line;
+
+    line.append("GET " + url);
+    if (!query_params.empty()) {
+        line.append("?" + query_params);
+    }
+    line.append(" HTTP/1.1");
     compute_string_message(message, line);
     line.clear();
 
-    compute_string_message(message, "");
+    // Add host.
+    line.append("Host: " + host);
+    compute_string_message(message, line);
+    line.clear();
 
-    compute_string_message(message, body_data);
+    // Add cookies (if any).
+    if (!cookies.empty()) {
+        line.append("Cookie: " + cookies);
+        compute_string_message(message, line);
+        line.clear();
+    }
+
+    // Add new line at the end of the headers.
+    compute_string_message(message, "");
 
     return message;
 }

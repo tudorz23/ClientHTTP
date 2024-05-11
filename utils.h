@@ -8,6 +8,7 @@
 
 const std::string REGISTER_PATH = "/api/v1/tema/auth/register";
 const std::string LOGIN_PATH = "/api/v1/tema/auth/login";
+const std::string LOGOUT_PATH = "/api/v1/tema/auth/logout";
 const std::string ACCESS_PATH = "/api/v1/tema/library/access";
 
 const std::string JSON_TYPE = "application/json";

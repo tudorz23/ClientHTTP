@@ -41,7 +41,7 @@ void Client::run() {
         } else if (stdin_data == "delete_book") {
             cout << "delete book input" << "\n";
         } else if (stdin_data == "logout") {
-            cout << "logout input" << "\n";
+            manage_logout();
         } else if (stdin_data == "exit") {
             cout << "exit input" << "\n";
             break;
@@ -144,4 +144,28 @@ void Client::manage_login() {
     cookies = all_cookies.substr(0, all_cookies.find(';'));
 
     cout << "SUCCESS: User " << username << " successfully logged-in.\n";
+}
+
+
+void Client::manage_logout() {
+    string request = compute_get_request(SERVER_IP, LOGOUT_PATH,
+                                         empty_string, cookies);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+
+    // Check if there is an error.
+    size_t json_start_pos = response.find('{');
+    if (json_start_pos != string::npos) {
+        string json_response = response.substr(json_start_pos);
+        json error_mapping = json::parse(json_response);
+        string error_msg = error_mapping.at("error");
+
+        cout << "ERROR: " << error_msg << "\n";
+        return;
+    }
+
+    // No error, so set the user as logged out.
+    cookies.clear();
+    cout << "SUCCESS: User successfully logged out.\n";
 }
