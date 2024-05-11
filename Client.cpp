@@ -12,10 +12,6 @@ using json = nlohmann::json;
 
 using namespace std;
 
-Client::Client() {
-
-}
-
 
 void Client::run() {
     string stdin_data;
@@ -31,7 +27,7 @@ void Client::run() {
         } else if (stdin_data == "login") {
             manage_login();
         } else if (stdin_data == "enter_library") {
-            cout << "Enter lib input" << "\n";
+            manage_enter_library();
         } else if (stdin_data == "get_books") {
             cout << "get books input" << "\n";
         } else if (stdin_data == "get_book") {
@@ -81,16 +77,18 @@ void Client::manage_register() {
 
     string response = receive_from_server(sockfd);
 
+    // Check if there is an error.
     size_t json_start_pos = response.find('{');
-    if (json_start_pos == string::npos) {
-        cout << "SUCCESS: User " << username << " successfully registered.\n";
+    if (json_start_pos != string::npos) {
+        string json_response = response.substr(json_start_pos);
+        json error_mapping = json::parse(json_response);
+        string error_msg = error_mapping.at("error");
+
+        cout << "ERROR: " << error_msg << "\n";
         return;
     }
 
-    string json_response = response.substr(json_start_pos);
-    json error_mapping = json::parse(json_response);
-    string error_msg = error_mapping.at("error");
-    cout << "ERROR: " << error_msg << "\n";
+    cout << "SUCCESS: User " << username << " successfully registered.\n";
 }
 
 
@@ -167,5 +165,44 @@ void Client::manage_logout() {
 
     // No error, so set the user as logged out.
     cookies.clear();
+    jwt.clear();
     cout << "SUCCESS: User successfully logged out.\n";
+}
+
+
+void Client::manage_enter_library() {
+    if (!jwt.empty()) {
+        cout << "ERROR: User already has access to the library.\n";
+        return;
+    }
+
+    string request = compute_get_request(SERVER_IP, ACCESS_PATH,
+                                         empty_string, cookies);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+
+    // Parse the received JSON.
+    size_t json_start_pos = response.find('{');
+    if (json_start_pos == string::npos) {
+        cout << "ERROR: No JSON object received.\n";
+        return;
+    }
+
+    string json_str_response = response.substr(json_start_pos);
+    json obj_json = json::parse(json_str_response);
+
+    if (obj_json.contains("error")) {
+        string error_msg = obj_json.at("error");
+        cout << "ERROR: " << error_msg << "\n";
+        return;
+    }
+
+    if (!obj_json.contains("token")) {
+        cout << "ERROR: No token received.\n";
+        return;
+    }
+
+    jwt = obj_json.at("token");
+    cout << "SUCCESS: User has access to the library.\n";
 }

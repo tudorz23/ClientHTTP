@@ -17,8 +17,6 @@ class Client {
 
 
  public:
-    Client();
-
     void run();
 
 
@@ -29,6 +27,9 @@ class Client {
 
 
     void manage_logout();
+
+
+    void manage_enter_library();
 };
 
 
