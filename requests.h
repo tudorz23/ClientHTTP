@@ -18,7 +18,7 @@ char *old_compute_post_request(char *host, char *url, char* content_type, char *
 
 std::string compute_post_request(const std::string &host, const std::string &url,
                                  const std::string &content_type, std::string &body_data,
-                                 std::vector<std::string> &cookies);
+                                 std::string &cookies);
 
 
 #endif /* REQUESTS_H */

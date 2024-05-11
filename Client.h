@@ -10,10 +10,10 @@
 class Client {
  private:
     int sockfd;
-    std::vector<std::string> cookies;
+    std::string cookies;
+    std::string jwt;
 
     std::string empty_string;
-    std::vector<std::string> empty_vector;
 
 
  public:
@@ -23,6 +23,9 @@ class Client {
 
 
     void manage_register();
+
+
+    void manage_login();
 };
 
 

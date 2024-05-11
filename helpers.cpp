@@ -143,13 +143,11 @@ string receive_from_server(int sockfd) {
 }
 
 
-char *basic_extract_json_response(char *str) {
-    return strstr(str, "{\"");
-}
-
-
-
 bool contains_space(string &buff) {
+    if (buff.empty()) {
+        return true;
+    }
+
     for (auto &ch : buff) {
         if (isspace(ch)) {
             return true;

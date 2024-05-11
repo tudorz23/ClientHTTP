@@ -121,7 +121,7 @@ char *old_compute_post_request(char *host, char *url, char* content_type, char *
 
 string compute_post_request(const string &host, const string &url,
                             const string &content_type, string &body_data,
-                            vector<string> &cookies) {
+                            string &cookies) {
     string message;
     string line;
 
