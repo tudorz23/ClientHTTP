@@ -31,7 +31,7 @@ void Client::run() {
         } else if (stdin_data == "get_books") {
             manage_get_books();
         } else if (stdin_data == "get_book") {
-            cout << "get book input" << "\n";
+            manage_get_book();
         } else if (stdin_data == "add_book") {
             manage_add_book();
         } else if (stdin_data == "delete_book") {
@@ -47,6 +47,33 @@ void Client::run() {
 
         close_connection(sockfd);
     }
+}
+
+
+string Client::get_ret_code(const string &response) {
+    // Parse the response.
+    size_t ret_code_begin = response.find("HTTP/1.1 ") + strlen("HTTP/1.1 ");
+
+    string all_from_code = response.substr(ret_code_begin);
+    string code = all_from_code.substr(0, all_from_code.find("\r\n"));
+
+    return code;
+}
+
+
+string Client::get_error_message(const string &response) {
+    size_t json_start_pos = response.find('{');
+
+    if (json_start_pos != string::npos) {
+        string json_response = response.substr(json_start_pos);
+        json error_mapping = json::parse(json_response);
+        string error_msg = error_mapping.at("error");
+
+        return error_msg;
+    }
+
+    // Should never be reached.
+    return "";
 }
 
 
@@ -329,5 +356,56 @@ void Client::manage_get_books() {
     string json_str_array = response.substr(json_array_start);
     json book_array = json::parse(json_str_array);
 
-    cout << "[" << code << "] SUCCESS: Books are: " << book_array.dump(4) << "\n";
+    cout << "[" << code << "] SUCCESS: Books are:\n" << book_array.dump(2) << "\n";
+}
+
+
+void Client::manage_get_book() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
+    if (jwt.empty()) {
+        cout << "ERROR: User does not have access to the library.\n";
+        return;
+    }
+
+    string id;
+
+    cout << "id=";
+    getline(cin, id, '\n');
+    if (!is_number(id)) {
+        cout << "ERROR: id must be a positive integer.\n";
+        return;
+    }
+
+    string specific_path = BOOKS_PATH + "/" + id;
+
+    string request = compute_get_request(SERVER_IP, specific_path, empty_string,
+                                         cookies, jwt);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
+
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
+
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
+        return;
+    }
+
+    // No error, get the book details.
+    size_t json_start = response.find('{');
+    if (json_start == string::npos) {
+        cout << "ERROR: No JSON object received.\n";
+        return;
+    }
+
+    string json_str = response.substr(json_start);
+    json book_details = json::parse(json_str);
+
+    cout << "[" << code << "] SUCCESS: Book details:\n" << book_details.dump(2) << "\n";
 }

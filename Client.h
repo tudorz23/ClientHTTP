@@ -16,6 +16,11 @@ class Client {
     std::string empty_string;
 
 
+    std::string get_ret_code(const std::string &response);
+
+
+    std::string get_error_message(const std::string &response);
+
  public:
     void run();
 
@@ -36,6 +41,9 @@ class Client {
 
 
     void manage_get_books();
+
+
+    void manage_get_book();
 };
 
 
