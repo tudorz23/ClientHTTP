@@ -44,6 +44,9 @@ class Client {
 
 
     void manage_get_book();
+
+
+    void manage_delete_book();
 };
 
 

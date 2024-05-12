@@ -35,7 +35,7 @@ void Client::run() {
         } else if (stdin_data == "add_book") {
             manage_add_book();
         } else if (stdin_data == "delete_book") {
-            cout << "delete book input" << "\n";
+            manage_delete_book();
         } else if (stdin_data == "logout") {
             manage_logout();
         } else if (stdin_data == "exit") {
@@ -173,7 +173,7 @@ void Client::manage_login() {
 
 
 void Client::manage_logout() {
-    string request = compute_get_request(SERVER_IP, LOGOUT_PATH,
+    string request = compute_get_delete_request(GET, SERVER_IP, LOGOUT_PATH,
                                          empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
 
@@ -203,7 +203,7 @@ void Client::manage_enter_library() {
         return;
     }
 
-    string request = compute_get_request(SERVER_IP, ACCESS_PATH,
+    string request = compute_get_delete_request(GET, SERVER_IP, ACCESS_PATH,
                                          empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
 
@@ -321,8 +321,9 @@ void Client::manage_get_books() {
         return;
     }
 
-    string request = compute_get_request(SERVER_IP, BOOKS_PATH, empty_string,
-                                         cookies, jwt);
+    // Complete GET request.
+    string request = compute_get_delete_request(GET, SERVER_IP, BOOKS_PATH,
+                                                empty_string, cookies, jwt);
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
@@ -375,15 +376,16 @@ void Client::manage_get_book() {
 
     cout << "id=";
     getline(cin, id, '\n');
-    if (!is_number(id)) {
-        cout << "ERROR: id must be a positive integer.\n";
+    if (!is_number(id) && (id != "0")) {
+        cout << "ERROR: id must be a positive integer or zero.\n";
         return;
     }
 
     string specific_path = BOOKS_PATH + "/" + id;
 
-    string request = compute_get_request(SERVER_IP, specific_path, empty_string,
-                                         cookies, jwt);
+    // Complete GET request.
+    string request = compute_get_delete_request(GET, SERVER_IP, specific_path,
+                                                empty_string, cookies, jwt);
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
@@ -408,4 +410,47 @@ void Client::manage_get_book() {
     json book_details = json::parse(json_str);
 
     cout << "[" << code << "] SUCCESS: Book details:\n" << book_details.dump(2) << "\n";
+}
+
+
+void Client::manage_delete_book() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
+    if (jwt.empty()) {
+        cout << "ERROR: User does not have access to the library.\n";
+        return;
+    }
+
+    string id;
+
+    cout << "id=";
+    getline(cin, id, '\n');
+    if (!is_number(id) && (id != "0")) {
+        cout << "ERROR: id must be a positive integer or zero.\n";
+        return;
+    }
+
+    string specific_path = BOOKS_PATH + "/" + id;
+
+    // Complete DELETE request.
+    string request = compute_get_delete_request(DELETE, SERVER_IP, specific_path,
+                                                empty_string, cookies, jwt);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
+
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
+
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
+        return;
+    }
+
+    // No error, delete successful.
+    cout << "[" << code << "] SUCCESS: Book <" << id << "> successfully deleted.\n";
 }

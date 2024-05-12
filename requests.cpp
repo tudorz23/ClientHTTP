@@ -53,13 +53,13 @@ string compute_post_request(const string &host, const string &url,
 }
 
 
-string compute_get_request(const string &host, const string &url,
-                           string &query_params, string &cookies,
-                           string &token) {
+string compute_get_delete_request(const string &name, const string &host,
+                                  const string &url, string &query_params,
+                                  string &cookies, string &token) {
     string message, line;
 
     // Add method name, URL and protocol type.
-    line.append("GET " + url);
+    line.append(name + " " + url);
     if (!query_params.empty()) {
         line.append("?" + query_params);
     }
