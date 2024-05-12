@@ -29,7 +29,7 @@ void Client::run() {
         } else if (stdin_data == "enter_library") {
             manage_enter_library();
         } else if (stdin_data == "get_books") {
-            cout << "get books input" << "\n";
+            manage_get_books();
         } else if (stdin_data == "get_book") {
             cout << "get book input" << "\n";
         } else if (stdin_data == "add_book") {
@@ -280,4 +280,54 @@ void Client::manage_add_book() {
 
     // No error, print suggestive message.
     cout << "SUCCESS: Book <" << title << "> successfully added to the library.\n";
+}
+
+
+void Client::manage_get_books() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
+    if (jwt.empty()) {
+        cout << "ERROR: User does not have access to the library.\n";
+        return;
+    }
+
+    string request = compute_get_request(SERVER_IP, BOOKS_PATH, empty_string,
+                                         cookies, jwt);
+    send_to_server(sockfd, request);
+
+    string response = receive_from_server(sockfd);
+
+    // Parse the response.
+    size_t ret_code_begin = response.find("HTTP/1.1 ") + strlen("HTTP/1.1 ");
+
+    string from_code = response.substr(ret_code_begin);
+    string code = from_code.substr(0, from_code.find("\r\n"));
+
+    if (code != "200 OK") {
+        // An error message was received.
+        size_t json_start_pos = response.find('{');
+        if (json_start_pos != string::npos) {
+            string json_response = response.substr(json_start_pos);
+            json error_mapping = json::parse(json_response);
+            string error_msg = error_mapping.at("error");
+
+            cout << "[" << code << "] ERROR: " << error_msg << "\n";
+        }
+        return;
+    }
+
+    // No error, get the books.
+    size_t json_array_start = response.find('[');
+    if (json_array_start == string::npos) {
+        cout << "ERROR: No array of JSON objects received.\n";
+        return;
+    }
+
+    string json_str_array = response.substr(json_array_start);
+    json book_array = json::parse(json_str_array);
+
+    cout << "[" << code << "] SUCCESS: Books are: " << book_array.dump(4) << "\n";
 }

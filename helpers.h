@@ -16,10 +16,6 @@
 void error(const char *msg);
 
 
-// Adds a line to a string message
-void compute_message(char *message, const char *line);
-
-
 void compute_string_message(std::string &message, const std::string &line);
 
 
