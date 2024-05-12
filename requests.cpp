@@ -1,6 +1,5 @@
 #include "helpers.h"
 #include "requests.h"
-#include "utils.h"
 
 using namespace std;
 
@@ -29,7 +28,7 @@ string compute_post_request(const string &host, const string &url,
     compute_string_message(message, line);
     line.clear();
 
-    // Add cookies (if any).
+    // Add cookies (if present).
     if (!cookies.empty()) {
         line.append("Cookie: " + cookies);
         compute_string_message(message, line);
@@ -72,7 +71,7 @@ string compute_get_delete_request(const string &name, const string &host,
     compute_string_message(message, line);
     line.clear();
 
-    // Add cookies (if any).
+    // Add cookies (if present).
     if (!cookies.empty()) {
         line.append("Cookie: " + cookies);
         compute_string_message(message, line);

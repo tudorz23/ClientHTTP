@@ -4,7 +4,6 @@
 #include <string>
 
 #define BUFLEN 4096
-#define LINELEN 1000
 
 #define HEADER_TERMINATOR "\r\n\r\n"
 #define HEADER_TERMINATOR_SIZE (sizeof(HEADER_TERMINATOR) - 1)

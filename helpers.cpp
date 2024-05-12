@@ -4,7 +4,6 @@
 #include <cstring>     /* memcpy, memset */
 #include <sys/socket.h> /* socket, connect */
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
-#include <netdb.h>      /* struct hostent, gethostbyname */
 #include <arpa/inet.h>
 
 
@@ -53,7 +52,6 @@ void close_connection(int sockfd) {
 
 
 void send_to_server(int sockfd, string &msg) {
-
     char *message = strdup(msg.c_str());
     DIE(!message, "strdup failed\n");
 

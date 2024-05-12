@@ -102,6 +102,7 @@ void Client::manage_register() {
                                       credentials_string, empty_string, empty_string);
     send_to_server(sockfd, req);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -113,6 +114,7 @@ void Client::manage_register() {
         return;
     }
 
+    // No error, successful registration.
     cout << "[" << code << "] SUCCESS: User " << username << " successfully registered.\n";
 }
 
@@ -147,6 +149,7 @@ void Client::manage_login() {
                                       credentials_string, empty_string, empty_string);
     send_to_server(sockfd, req);
 
+    // Receiver server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -169,6 +172,7 @@ void Client::manage_login() {
 
 
 void Client::manage_logout() {
+    // Create and send the GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, LOGOUT_PATH,
                                          empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
@@ -197,6 +201,7 @@ void Client::manage_enter_library() {
         return;
     }
 
+    // Create and send the GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, ACCESS_PATH,
                                          empty_string, cookies, empty_string);
     send_to_server(sockfd, request);
@@ -289,10 +294,10 @@ void Client::manage_add_book() {
                                           book_string, cookies, jwt);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
-    // Check if there is an error.
     if (code != "200 OK") {
         // An error was received.
         string error_message = get_error_message(response);
@@ -318,29 +323,20 @@ void Client::manage_get_books() {
         return;
     }
 
-    // Complete GET request.
+    // Create and send GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, BOOKS_PATH,
                                                 empty_string, cookies, jwt);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
-
-    // Parse the response.
-    size_t ret_code_begin = response.find("HTTP/1.1 ") + strlen("HTTP/1.1 ");
-
-    string from_code = response.substr(ret_code_begin);
-    string code = from_code.substr(0, from_code.find("\r\n"));
+    string code = get_ret_code(response);
 
     if (code != "200 OK") {
         // An error message was received.
-        size_t json_start_pos = response.find('{');
-        if (json_start_pos != string::npos) {
-            string json_response = response.substr(json_start_pos);
-            json error_mapping = json::parse(json_response);
-            string error_msg = error_mapping.at("error");
+        string error_message = get_error_message(response);
 
-            cout << "[" << code << "] ERROR: " << error_msg << "\n";
-        }
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
         return;
     }
 
@@ -380,11 +376,12 @@ void Client::manage_get_book() {
 
     string specific_path = BOOKS_PATH + "/" + id;
 
-    // Complete GET request.
+    // Create and send GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, specific_path,
                                                 empty_string, cookies, jwt);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -432,11 +429,12 @@ void Client::manage_delete_book() {
 
     string specific_path = BOOKS_PATH + "/" + id;
 
-    // Complete DELETE request.
+    // Create and send DELETE request.
     string request = compute_get_delete_request(DELETE, SERVER_IP, specific_path,
                                                 empty_string, cookies, jwt);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
