@@ -228,7 +228,7 @@ void Client::manage_enter_library() {
     }
 
     jwt = obj_json.at("token");
-    cout << "[" << code << "] SUCCESS: User has access to the library.\n";
+    cout << "[" << code << "] SUCCESS: User has successfully accessed the library.\n";
 }
 
 
