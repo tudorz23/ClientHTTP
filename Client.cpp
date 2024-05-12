@@ -103,19 +103,17 @@ void Client::manage_register() {
     send_to_server(sockfd, req);
 
     string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
 
-    // Check if there is an error.
-    size_t json_start_pos = response.find('{');
-    if (json_start_pos != string::npos) {
-        string json_response = response.substr(json_start_pos);
-        json error_mapping = json::parse(json_response);
-        string error_msg = error_mapping.at("error");
+    if (code != "201 Created") {
+        // An error was received.
+        string error_message = get_error_message(response);
 
-        cout << "ERROR: " << error_msg << "\n";
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
         return;
     }
 
-    cout << "SUCCESS: User " << username << " successfully registered.\n";
+    cout << "[" << code << "] SUCCESS: User " << username << " successfully registered.\n";
 }
 
 
@@ -150,15 +148,13 @@ void Client::manage_login() {
     send_to_server(sockfd, req);
 
     string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
 
-    // Check if there is an error.
-    size_t json_start_pos = response.find('{');
-    if (json_start_pos != string::npos) {
-        string json_response = response.substr(json_start_pos);
-        json error_mapping = json::parse(json_response);
-        string error_msg = error_mapping.at("error");
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
 
-        cout << "ERROR: " << error_msg << "\n";
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
         return;
     }
 
@@ -168,7 +164,7 @@ void Client::manage_login() {
     string all_cookies = response.substr(cookie_start_pos);
     cookies = all_cookies.substr(0, all_cookies.find(';'));
 
-    cout << "SUCCESS: User " << username << " successfully logged-in.\n";
+    cout << "[" << code << "] SUCCESS: User " << username << " successfully logged-in.\n";
 }
 
 
@@ -178,22 +174,20 @@ void Client::manage_logout() {
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
 
-    // Check if there is an error.
-    size_t json_start_pos = response.find('{');
-    if (json_start_pos != string::npos) {
-        string json_response = response.substr(json_start_pos);
-        json error_mapping = json::parse(json_response);
-        string error_msg = error_mapping.at("error");
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
 
-        cout << "ERROR: " << error_msg << "\n";
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
         return;
     }
 
     // No error, so set the user as logged out.
     cookies.clear();
     jwt.clear();
-    cout << "SUCCESS: User successfully logged out.\n";
+    cout << "[" << code << "] SUCCESS: User successfully logged out.\n";
 }
 
 
@@ -208,8 +202,17 @@ void Client::manage_enter_library() {
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
 
-    // Parse the received JSON.
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
+
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
+        return;
+    }
+
+    // No error, parse the received JSON.
     size_t json_start_pos = response.find('{');
     if (json_start_pos == string::npos) {
         cout << "ERROR: No JSON object received.\n";
@@ -219,19 +222,13 @@ void Client::manage_enter_library() {
     string json_str_response = response.substr(json_start_pos);
     json obj_json = json::parse(json_str_response);
 
-    if (obj_json.contains("error")) {
-        string error_msg = obj_json.at("error");
-        cout << "ERROR: " << error_msg << "\n";
-        return;
-    }
-
     if (!obj_json.contains("token")) {
         cout << "ERROR: No token received.\n";
         return;
     }
 
     jwt = obj_json.at("token");
-    cout << "SUCCESS: User has access to the library.\n";
+    cout << "[" << code << "] SUCCESS: User has access to the library.\n";
 }
 
 
@@ -293,20 +290,20 @@ void Client::manage_add_book() {
     send_to_server(sockfd, request);
 
     string response = receive_from_server(sockfd);
+    string code = get_ret_code(response);
 
     // Check if there is an error.
-    size_t json_start_pos = response.find('{');
-    if (json_start_pos != string::npos) {
-        string json_response = response.substr(json_start_pos);
-        json error_mapping = json::parse(json_response);
-        string error_msg = error_mapping.at("error");
+    if (code != "200 OK") {
+        // An error was received.
+        string error_message = get_error_message(response);
 
-        cout << "ERROR: " << error_msg << "\n";
+        cout << "[" << code << "] ERROR: " << error_message << "\n";
         return;
     }
 
     // No error, print suggestive message.
-    cout << "SUCCESS: Book <" << title << "> successfully added to the library.\n";
+    cout << "[" << code << "] SUCCESS: Book <" << title
+         << "> successfully added to the library.\n";
 }
 
 
