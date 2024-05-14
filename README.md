@@ -15,7 +15,7 @@ to log in and add and delete books.
 
 ## 2. File distribution
 * The implementation is based on the skeleton provided in the 9th laboratory.
-* Thus, the `buffer.cpp` and 'buffer.h' are unmodified.
+* Thus, the `buffer.cpp` and `buffer.h` are unmodified.
 * Various helper functions are written in `helpers.cpp` and `helpers.h`. Some
 of them are taken from the laboratory and modified to be better integrated in
 the C++ project (i.e. they now return and accept as parameter `std::string`
@@ -62,7 +62,7 @@ really thorough and the methods are easy to use (and they "get the job done").
 ---
 
 ## 5. Program flow and logic
-* The client receives command from the user through STDIN and calls the
+* The client receives commands from the user through STDIN and calls the
 respective functions to manage the requests of the user.
 * The user must firstly `register` in the server's database, by providing a
 username and a password.
@@ -89,7 +89,7 @@ the requests to the server. The responses from the server are also checked.
 client after a few requests, so the easiest way to handle this problem was for
 the client to open the connection before every command and close it after the
 command execution.
-* After login, the server send a response that contains 3 cookies, the first
+* After login, the server sends a response that contains 3 cookies, the first
 one being the one personalized for the session. For some reason I do not know,
 only the first cookie should be used in future requests to the server, else  it
 does not work.
@@ -109,7 +109,7 @@ by personalized messages for each command.
 ---
 
 ## 7. Final thoughts
-* It is worth noting that all the tests from the checker are successful on my
+* It is worth noting that all the tests from the checker work fine on my
 machine (by that, I mean they display the right message, i.e. the commands that
 are invalid and are supposed to fail do fail, and the valid ones do succeed).
 Also, I manually tested all the situations I could think of using `valgrind`,
@@ -121,5 +121,5 @@ a certain format for the messages.
 ---
 
 ## 8. Bibliography
-* The 9th laboratory: https://pcom.pages.upb.ro/labs/lab9/lecture.html
+* The 9th laboratory: https://pcom.pages.upb.ro/labs/lab9/http.html
 * The JSON library: https://github.com/nlohmann/json
