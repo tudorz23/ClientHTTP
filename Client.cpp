@@ -9,16 +9,14 @@
 #include "json.hpp"
 using json = nlohmann::json;
 
-
 using namespace std;
 
 
 void Client::run() {
     string stdin_data;
-    string server_ip(SERVER_IP);
 
     while (true) {
-        sockfd = open_connection(server_ip, SERVER_PORT, AF_INET, SOCK_STREAM, 0);
+        sockfd = open_connection(SERVER_IP, SERVER_PORT, AF_INET, SOCK_STREAM, 0);
 
         getline(cin, stdin_data, '\n');
 
@@ -51,9 +49,10 @@ void Client::run() {
 
 
 string Client::get_ret_code(const string &response) {
-    // Parse the response.
+    // Get the return code from the response.
     size_t ret_code_begin = response.find("HTTP/1.1 ") + strlen("HTTP/1.1 ");
 
+    // Ignore everything after the code and the message.
     string all_from_code = response.substr(ret_code_begin);
     string code = all_from_code.substr(0, all_from_code.find("\r\n"));
 
@@ -64,6 +63,8 @@ string Client::get_ret_code(const string &response) {
 string Client::get_error_message(const string &response) {
     size_t json_start_pos = response.find('{');
 
+    // Just for safety. Should always enter this block,
+    // from the calling recommendation of the function.
     if (json_start_pos != string::npos) {
         string json_response = response.substr(json_start_pos);
         json error_mapping = json::parse(json_response);
@@ -99,7 +100,7 @@ void Client::manage_register() {
 
     string credentials_string = credentials.dump();
     string req = compute_post_request(SERVER_IP, REGISTER_PATH, JSON_TYPE,
-                                      credentials_string, empty_string, empty_string);
+                                      credentials_string, EMPTY_STRING, EMPTY_STRING);
     send_to_server(sockfd, req);
 
     // Receive server response and check for errors.
@@ -146,10 +147,10 @@ void Client::manage_login() {
 
     string credentials_string = credentials.dump();
     string req = compute_post_request(SERVER_IP, LOGIN_PATH, JSON_TYPE,
-                                      credentials_string, empty_string, empty_string);
+                                      credentials_string, EMPTY_STRING, EMPTY_STRING);
     send_to_server(sockfd, req);
 
-    // Receiver server response and check for errors.
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -165,6 +166,8 @@ void Client::manage_login() {
     size_t cookie_start_pos = response.find(SET_COOKIE) + SET_COOKIE.length();
 
     string all_cookies = response.substr(cookie_start_pos);
+
+    // Only take the first cookie for it to work.
     cookies = all_cookies.substr(0, all_cookies.find(';'));
 
     cout << "[" << code << "] SUCCESS: User " << username << " successfully logged-in.\n";
@@ -172,11 +175,17 @@ void Client::manage_login() {
 
 
 void Client::manage_logout() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
     // Create and send the GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, LOGOUT_PATH,
-                                         empty_string, cookies, empty_string);
+                                                EMPTY_STRING, cookies, EMPTY_STRING);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -196,6 +205,11 @@ void Client::manage_logout() {
 
 
 void Client::manage_enter_library() {
+    if (cookies.empty()) {
+        cout << "ERROR: No user logged in.\n";
+        return;
+    }
+
     if (!jwt.empty()) {
         cout << "ERROR: User already has access to the library.\n";
         return;
@@ -203,9 +217,10 @@ void Client::manage_enter_library() {
 
     // Create and send the GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, ACCESS_PATH,
-                                         empty_string, cookies, empty_string);
+                                                EMPTY_STRING, cookies, EMPTY_STRING);
     send_to_server(sockfd, request);
 
+    // Receive server response and check for errors.
     string response = receive_from_server(sockfd);
     string code = get_ret_code(response);
 
@@ -252,10 +267,6 @@ void Client::manage_add_book() {
 
     cout << "title=";
     getline(cin, title, '\n');
-    if (title.empty()) {
-        cout << "ERROR: title cannot be empty.\n";
-        return;
-    }
 
     cout << "author=";
     getline(cin, author, '\n');
@@ -325,7 +336,7 @@ void Client::manage_get_books() {
 
     // Create and send GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, BOOKS_PATH,
-                                                empty_string, cookies, jwt);
+                                                EMPTY_STRING, cookies, jwt);
     send_to_server(sockfd, request);
 
     // Receive server response and check for errors.
@@ -378,7 +389,7 @@ void Client::manage_get_book() {
 
     // Create and send GET request.
     string request = compute_get_delete_request(GET, SERVER_IP, specific_path,
-                                                empty_string, cookies, jwt);
+                                                EMPTY_STRING, cookies, jwt);
     send_to_server(sockfd, request);
 
     // Receive server response and check for errors.
@@ -431,7 +442,7 @@ void Client::manage_delete_book() {
 
     // Create and send DELETE request.
     string request = compute_get_delete_request(DELETE, SERVER_IP, specific_path,
-                                                empty_string, cookies, jwt);
+                                                EMPTY_STRING, cookies, jwt);
     send_to_server(sockfd, request);
 
     // Receive server response and check for errors.

@@ -6,11 +6,9 @@
 #include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
 #include <arpa/inet.h>
 
-
 #include "helpers.h"
 #include "buffer.h"
 #include "utils.h"
-
 
 using namespace std;
 
@@ -27,7 +25,8 @@ void compute_string_message(string &message, const string &line) {
 }
 
 
-int open_connection(std::string &host_ip, int portno, int ip_type, int socket_type, int flag) {
+int open_connection(const std::string &host_ip, int portno, int ip_type,
+                    int socket_type, int flag) {
     struct sockaddr_in serv_addr;
     int sockfd = socket(ip_type, socket_type, flag);
     if (sockfd < 0)

@@ -27,6 +27,6 @@ clean:
 	rm -rf *.o $(TARGETS)
 
 pack:
-	zip -FSr Zaharia_MariusTudor_323CA_Tema4PC Makefile *.cpp *.h *.hpp README.md
+	zip -FSr 323CA_Zaharia_Marius-Tudor_Tema4PC Makefile *.cpp *.h *.hpp README.md
 
 .PHONY: all clean pack

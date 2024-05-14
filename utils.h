@@ -31,6 +31,7 @@ const std::string JSON_TYPE = "application/json";
 
 const std::string SERVER_IP = "34.246.184.49";
 const std::string SET_COOKIE = "Set-Cookie: ";
+const std::string EMPTY_STRING;
 
 
 #endif /* UTILS_H */

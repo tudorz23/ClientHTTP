@@ -1,12 +1,12 @@
-#include "helpers.h"
 #include "requests.h"
+#include "helpers.h"
 
 using namespace std;
 
 
 string compute_post_request(const string &host, const string &url,
-                            const string &content_type, string &body_data,
-                            string &cookies, string &token) {
+                            const string &content_type, const string &body_data,
+                            const string &cookies, const string &token) {
     string message, line;
 
     // Add method name, URL and protocol type.
@@ -53,8 +53,8 @@ string compute_post_request(const string &host, const string &url,
 
 
 string compute_get_delete_request(const string &name, const string &host,
-                                  const string &url, string &query_params,
-                                  string &cookies, string &token) {
+                                  const string &url, const string &query_params,
+                                  const string &cookies, const string &token) {
     string message, line;
 
     // Add method name, URL and protocol type.
