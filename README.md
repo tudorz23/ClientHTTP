@@ -26,6 +26,8 @@ in the lab skeleton, but are implemented "fully" in C++ (i.e. with `string`
 operations instead of `mallocs` and `char**`).
 * The client is described as a class, placed in `Client.h`, while the class
 methods are implemented in `Client.cpp`.
+* The driver code, containing the `main()` function, is written in
+`client_main.cpp`.
 * The `json.hpp` is a C++ JSON management library taken from `nlohmann`.
 
 ---
