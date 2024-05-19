@@ -28,6 +28,7 @@ operations instead of `mallocs` and `char**`).
 methods are implemented in `Client.cpp`.
 * The driver code, containing the `main()` function, is written in
 `client_main.cpp`.
+* `DIE` macro and other constants are placed in `utils.h`.
 * The `json.hpp` is a C++ JSON management library taken from `nlohmann`.
 
 ---
@@ -92,9 +93,8 @@ client after a few requests, so the easiest way to handle this problem was for
 the client to open the connection before every command and close it after the
 command execution.
 * After login, the server sends a response that contains 3 cookies, the first
-one being the one personalized for the session. For some reason I do not know,
-only the first cookie should be used in future requests to the server, else  it
-does not work.
+one being the one personalized for the session. For some reason, only the first
+cookie should be used in future requests to the server, else it does not work.
 * To check whether a user is logged in or not, the `cookies` attribute is
 checked. If it is empty, no user is currently logged in.
 * Similarly, to control the access to the library, the `jwt` attribute is

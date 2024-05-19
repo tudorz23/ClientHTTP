@@ -88,7 +88,7 @@ void Client::manage_register() {
     getline(cin, password, '\n');
 
     if (contains_space(username) || contains_space(password)) {
-        cout << "Username and password cannot contain spaces. Try again.\n";;
+        cout << "Username and password cannot contain spaces. Try again.\n";
         return;
     }
 
@@ -135,7 +135,7 @@ void Client::manage_login() {
     getline(cin, password, '\n');
 
     if (contains_space(username) || contains_space(password)) {
-        cout << "Username and password cannot contain spaces. Try again.\n";;
+        cout << "Username and password cannot contain spaces. Try again.\n";
         return;
     }
 
